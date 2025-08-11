@@ -11,7 +11,7 @@ type ReportProps = {
     description: string;
 };
 
-const Report: React.FC<ReportProps> = ({ title, value, unit, icon, trend, description }) => {
+const Report = ({ title, value, unit, icon, trend, description }: ReportProps) => {
     return (
         <Paper elevation={3} sx={{ p: 2, width: 220 }}>
             <Typography variant="subtitle1" gutterBottom color="text.secondary">

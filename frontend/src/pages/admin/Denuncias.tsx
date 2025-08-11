@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     Container,
     Typography,
@@ -23,7 +23,7 @@ interface Denuncia {
     status: Status;
 }
 
-export const Denuncias: React.FC = () => {
+export const Denuncias = () => {
     const [denuncias, setDenuncias] = useState<Denuncia[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

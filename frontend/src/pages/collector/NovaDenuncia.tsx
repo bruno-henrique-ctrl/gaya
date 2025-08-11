@@ -29,7 +29,7 @@ export interface Denuncia {
     anonima?: boolean;
 }
 
-export function NovaDenuncia() {
+export const NovaDenuncia = () => {
     const [tipoDenuncia, setTipoDenuncia] = useState<DenunciaTipo>("Má Conduta");
     const [descricao, setDescricao] = useState("");
     const [anonima, setAnonima] = useState(false);
@@ -47,7 +47,7 @@ export function NovaDenuncia() {
         fetchDenuncias();
     }, []);
 
-    async function enviarDenuncia() {
+    const enviarDenuncia = async () => {
         if (!descricao.trim()) return;
 
         try {

@@ -20,7 +20,7 @@ interface User {
     tipo: string;
 }
 
-export default function UserManagement() {
+const UserManagement = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -89,3 +89,6 @@ export default function UserManagement() {
         </div>
     );
 }
+
+
+export default UserManagement

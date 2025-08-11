@@ -1,6 +1,6 @@
 import { Box, Typography, Container } from "@mui/material";
 
-export default function Footer() {
+const Footer = () => {
     return (
         <Box
             component="footer"
@@ -26,3 +26,5 @@ export default function Footer() {
         </Box>
     );
 }
+
+export default Footer

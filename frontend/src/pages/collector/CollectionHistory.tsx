@@ -23,7 +23,7 @@ interface Collection {
     descricao?: string;
 }
 
-export default function CollectorHistory() {
+const CollectorHistory = () => {
     const [history, setHistory] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -125,3 +125,6 @@ export default function CollectorHistory() {
         </Container>
     );
 }
+
+
+export default CollectorHistory

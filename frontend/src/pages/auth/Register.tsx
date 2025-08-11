@@ -11,9 +11,9 @@ import {
     CircularProgress,
 } from "@mui/material";
 
-type UserType = "coletador"; // removi "doador" e "catador", deixando só "coletador"
+type UserType = "coletador"; 
 
-export default function Register() {
+const Register = () => {
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [telefone, setTelefone] = useState("");
@@ -94,19 +94,6 @@ export default function Register() {
                     onChange={(e) => setTelefone(e.target.value)}
                 />
 
-                {/* Como só tem um tipo, podemos deixar fixo e esconder o select */}
-                {/* Caso queira manter o select para possível expansão, mantenha comentado */}
-                {/* <TextField
-                    label="Tipo de usuário"
-                    select
-                    fullWidth
-                    value={tipo}
-                    onChange={(e) => setTipo(e.target.value as UserType)}
-                    margin="normal"
-                >
-                    <MenuItem value="coletador">Coletador</MenuItem>
-                </TextField> */}
-
                 <TextField
                     label="Senha"
                     type="password"
@@ -131,3 +118,5 @@ export default function Register() {
         </Box>
     );
 }
+
+export default Register 

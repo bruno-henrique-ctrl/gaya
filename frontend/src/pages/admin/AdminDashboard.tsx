@@ -29,7 +29,7 @@ interface Collection {
     descricao?: string;
 }
 
-export default function AdminDashboard() {
+const AdminDashboard = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loadingUser, setLoadingUser] = useState(true);
     const [errorUser, setErrorUser] = useState<string | null>(null);
@@ -255,3 +255,6 @@ export default function AdminDashboard() {
         </Container>
     );
 }
+
+
+export default AdminDashboard

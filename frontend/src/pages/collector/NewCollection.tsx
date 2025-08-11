@@ -12,14 +12,13 @@ import {
 } from "@mui/material";
 import api from "../../api/api";
 
-export default function NewCollection() {
+const NewCollection = () => {
     const [dataColeta, setDataColeta] = useState("");
     const [horaColeta, setHoraColeta] = useState("");
     const [tipoMaterial, setTipoMaterial] = useState("");
     const [quantidade, setQuantidade] = useState<string[]>([]);
     const [descricao, setDescricao] = useState("");
 
-    // Novo estado para endereço
     const [rua, setRua] = useState("");
     const [numero, setNumero] = useState("");
     const [complemento, setComplemento] = useState("");
@@ -33,7 +32,7 @@ export default function NewCollection() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    function toggleQuantidade(value: string) {
+    const toggleQuantidade = (value: string) => {
         setQuantidade((prev) =>
             prev.includes(value)
                 ? prev.filter((q) => q !== value)
@@ -41,7 +40,7 @@ export default function NewCollection() {
         );
     }
 
-    async function handleSubmit(e: React.FormEvent) {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setSuccess(false);
@@ -57,7 +56,7 @@ export default function NewCollection() {
                 data_coleta: dataColeta,
                 hora_coleta: horaColeta,
                 tipo_material: tipoMaterial,
-                quantidade: quantidade, // lista de estimativas
+                quantidade: quantidade, 
                 descricao,
                 endereco: {
                     rua,
@@ -73,7 +72,6 @@ export default function NewCollection() {
 
             setSuccess(true);
 
-            // Reset dos campos
             setDataColeta("");
             setHoraColeta("");
             setTipoMaterial("");
@@ -188,3 +186,6 @@ export default function NewCollection() {
         </Container>
     );
 }
+
+
+export default NewCollection

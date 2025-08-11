@@ -26,7 +26,7 @@ interface Collection {
     descricao?: string;
 }
 
-export default function CollectorDashboard() {
+const CollectorDashboard = () => {
     const auth = useContext(AuthContext);
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
@@ -225,3 +225,5 @@ export default function CollectorDashboard() {
         </Container>
     );
 }
+
+export default CollectorDashboard

@@ -11,7 +11,7 @@ interface ChatMessage {
     timestamp: string;
 }
 
-function Chat() {
+const Chat = () => {
     const [username, setUsername] = useState("Rafaela");
     const [message, setMessage] = useState("");
     const [chat, setChat] = useState<ChatMessage[]>([]);

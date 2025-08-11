@@ -67,7 +67,7 @@ function HomeRedirect() {
   }
 }
 
-export default function App() {
+const App = () => {
   return (
     <AuthProvider>
       <ResetCSS />
@@ -178,6 +178,8 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+export default App
 
 const ResetCSS = createGlobalStyle`
   /* http://meyerweb.com/eric/tools/css/reset/ 

@@ -2,11 +2,11 @@ import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-export default function Navbar() {
+const Navbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    function handleLogout() {
+    const handleLogout = () => {
         logout();
         navigate("/login");
     }
@@ -88,3 +88,5 @@ export default function Navbar() {
         </AppBar>
     );
 }
+
+export default Navbar

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import api from '../../api/api'; // ajuste o caminho do seu arquivo api.ts
+import { useEffect, useState } from 'react';
+import api from '../../api/api'; 
 import { Box, Typography, Paper, Stack } from '@mui/material';
 
-const EstatisticasSistema: React.FC = () => {
+const EstatisticasSistema = () => {
     const [stats, setStats] = useState({
         totalUsuarios: 0,
         coletoresAtivos: 0,
@@ -15,7 +15,6 @@ const EstatisticasSistema: React.FC = () => {
         async function fetchStats() {
             try {
                 setLoading(true);
-                // exemplo de endpoint que retorna as estatísticas
                 const response = await api.get('/stats');
                 setStats(response.data);
                 setLoading(false);

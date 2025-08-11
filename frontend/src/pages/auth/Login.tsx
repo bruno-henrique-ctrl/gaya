@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { TextField, Button, Typography, Box, Alert } from "@mui/material";
 
-export default function Login() {
+const Login = () => {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export default function Login() {
 
     if (!auth) throw new Error("useAuth must be used within AuthProvider");
 
-    async function handleSubmit(e: React.FormEvent) {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
@@ -84,3 +84,5 @@ export default function Login() {
         </div>
     );
 }
+
+export default Login
