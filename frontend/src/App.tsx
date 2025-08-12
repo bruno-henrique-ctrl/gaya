@@ -23,14 +23,15 @@ import NotFound from "./pages/shared/NotFound";
 import EstatisticasSistema from "./pages/admin/Estatisticas.tsx";
 import { Denuncias } from "./pages/admin/Denuncias.tsx";
 import { NovaDenuncia } from "./pages/collector/NovaDenuncia.tsx";
+import WalletApp from "./wallet/WalletApp.tsx";
 
-function PrivateRoute({
+const PrivateRoute = ({
   children,
   roles,
 }: {
   children: React.ReactNode;
-  roles?: ("admin" | "coletador")[];  // removido "catador"
-}) {
+  roles?: ("admin" | "coletador")[];
+}) => {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
@@ -42,7 +43,7 @@ function PrivateRoute({
   return <>{children}</>;
 }
 
-function NotAuthorized() {
+const NotAuthorized = () => {
   return (
     <div style={{ padding: 20 }}>
       <h2>Não autorizado</h2>
@@ -51,7 +52,7 @@ function NotAuthorized() {
   );
 }
 
-function HomeRedirect() {
+const HomeRedirect = () => {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
@@ -61,7 +62,6 @@ function HomeRedirect() {
       return <Navigate to="/admin/dashboard" replace />;
     case "coletador":
       return <Navigate to="/coletador/dashboard" replace />;
-    // removido "catador"
     default:
       return <Navigate to="/not-authorized" replace />;
   }
@@ -164,6 +164,16 @@ const App = () => {
             element={
               <PrivateRoute>
                 <Chat />
+              </PrivateRoute>
+            }
+          />
+
+          {/* wallet */}
+          <Route
+            path="/wallet"
+            element={
+              <PrivateRoute>
+                <WalletApp />
               </PrivateRoute>
             }
           />

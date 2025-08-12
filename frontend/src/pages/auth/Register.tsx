@@ -11,8 +11,7 @@ import {
     CircularProgress,
 } from "@mui/material";
 
-type UserType = "coletador"; 
-
+type UserType = "coletador" | "admin";
 const Register = () => {
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
@@ -24,9 +23,9 @@ const Register = () => {
 
     const navigate = useNavigate();
 
-    const isFormValid = nome && email && telefone && senha;
+    const isFormValid = nome && email && senha && telefone;
 
-    async function handleSubmit(e: React.FormEvent) {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!isFormValid) return;
 
@@ -42,7 +41,7 @@ const Register = () => {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <Box
@@ -95,6 +94,20 @@ const Register = () => {
                 />
 
                 <TextField
+                    select
+                    label="Tipo"
+                    fullWidth
+                    required
+                    margin="normal"
+                    value={tipo}
+                    onChange={(e) => setTipo(e.target.value as UserType)}
+                >
+                    <MenuItem value="coletador">Coletador</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                    <MenuItem value="usuario">Usuário</MenuItem>
+                </TextField>
+
+                <TextField
                     label="Senha"
                     type="password"
                     fullWidth
@@ -117,6 +130,6 @@ const Register = () => {
             </form>
         </Box>
     );
-}
+};
 
-export default Register 
+export default Register;

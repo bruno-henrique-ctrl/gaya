@@ -70,6 +70,9 @@ const Navbar = () => {
                                 <Button color="inherit" component={Link} to="/coletador/novadenuncia">
                                     Nova Denuncia
                                 </Button>
+                                <Button color="inherit" component={Link} to="/wallet">
+                                    Wallet
+                                </Button>
                             </>
                         )}
 
@@ -78,6 +81,8 @@ const Navbar = () => {
                         <Button color="inherit" component={Link} to="/chat">
                             Chat
                         </Button>
+
+
 
                         <Button color="inherit" onClick={handleLogout}>
                             Sair
