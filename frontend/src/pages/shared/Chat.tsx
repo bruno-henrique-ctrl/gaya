@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import api from "../../api/api.ts"; // seu arquivo api.ts
 
-const socket: Socket = io("http://localhost:3001");
+const socket: Socket = io("http://localhost:3000");
 
 interface ChatMessage {
     id: number;

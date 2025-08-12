@@ -6,17 +6,32 @@ import {
     Button,
     Box,
     Alert,
-    MenuItem,
+    RadioGroup,
     FormControlLabel,
-    Checkbox,
+    Radio,
+    MenuItem
 } from "@mui/material";
 import api from "../../api/api";
+
+// Função para mapear quantidade textual para número (kg)
+function mapQuantidadeParaNumero(qtd: string): number {
+    switch (qtd) {
+        case "pequena":
+            return 5;       // até 5kg
+        case "media":
+            return 10;      // entre 5kg e 15kg
+        case "grande":
+            return 20;      // acima de 15kg
+        default:
+            return 0;
+    }
+}
 
 const NewCollection = () => {
     const [dataColeta, setDataColeta] = useState("");
     const [horaColeta, setHoraColeta] = useState("");
     const [tipoMaterial, setTipoMaterial] = useState("");
-    const [quantidade, setQuantidade] = useState<string[]>([]);
+    const [quantidade, setQuantidade] = useState(""); // agora é string simples
     const [descricao, setDescricao] = useState("");
 
     const [rua, setRua] = useState("");
@@ -32,31 +47,26 @@ const NewCollection = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const toggleQuantidade = (value: string) => {
-        setQuantidade((prev) =>
-            prev.includes(value)
-                ? prev.filter((q) => q !== value)
-                : [...prev, value]
-        );
-    }
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setSuccess(false);
 
-        if (!dataColeta || !horaColeta || !tipoMaterial || quantidade.length === 0 || !rua || !numero || !bairro || !cep || !cidade || !estado) {
+        if (!dataColeta || !horaColeta || !tipoMaterial || !quantidade || !rua || !numero || !bairro || !cep || !cidade || !estado) {
             setError("Por favor, preencha todos os campos obrigatórios.");
             return;
         }
 
         setLoading(true);
+
         try {
+            const quantidadeNum = mapQuantidadeParaNumero(quantidade);
+
             await api.post("/collections", {
                 data_coleta: dataColeta,
                 hora_coleta: horaColeta,
                 tipo_material: tipoMaterial,
-                quantidade: quantidade, 
+                quantidade: quantidadeNum,
                 descricao,
                 endereco: {
                     rua,
@@ -65,17 +75,18 @@ const NewCollection = () => {
                     bairro,
                     cep,
                     cidade,
-                    estado
+                    estado,
                 },
                 status,
             });
 
             setSuccess(true);
 
+            // resetar campos
             setDataColeta("");
             setHoraColeta("");
             setTipoMaterial("");
-            setQuantidade([]);
+            setQuantidade("");
             setDescricao("");
             setRua("");
             setNumero("");
@@ -84,14 +95,13 @@ const NewCollection = () => {
             setCep("");
             setCidade("");
             setEstado("");
-
         } catch (err) {
             console.error(err);
             setError("Erro ao criar nova coleta. Tente novamente.");
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <Container maxWidth="sm" sx={{ mt: 5 }}>
@@ -103,7 +113,6 @@ const NewCollection = () => {
             {success && <Alert severity="success" sx={{ mb: 2 }}>Coleta criada com sucesso!</Alert>}
 
             <Box component="form" onSubmit={handleSubmit} noValidate>
-
                 {/* Data e Horário */}
                 <Typography variant="subtitle1">Data da Coleta</Typography>
                 <TextField
@@ -143,20 +152,18 @@ const NewCollection = () => {
                     <MenuItem value="outros">Outros</MenuItem>
                 </TextField>
 
-                {/* Quantidade */}
-                <Typography variant="subtitle1">Estimativa de Quantidade</Typography>
-                <FormControlLabel
-                    control={<Checkbox checked={quantidade.includes("pequena")} onChange={() => toggleQuantidade("pequena")} />}
-                    label="Pequena (até 5kg)"
-                />
-                <FormControlLabel
-                    control={<Checkbox checked={quantidade.includes("media")} onChange={() => toggleQuantidade("media")} />}
-                    label="Média (5kg a 15kg)"
-                />
-                <FormControlLabel
-                    control={<Checkbox checked={quantidade.includes("grande")} onChange={() => toggleQuantidade("grande")} />}
-                    label="Grande (acima de 15kg)"
-                />
+                {/* Quantidade (radio) */}
+                <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                    Estimativa de Quantidade
+                </Typography>
+                <RadioGroup
+                    value={quantidade}
+                    onChange={(e) => setQuantidade(e.target.value)}
+                >
+                    <FormControlLabel value="pequena" control={<Radio />} label="Pequena (até 5kg)" />
+                    <FormControlLabel value="media" control={<Radio />} label="Média (5kg a 15kg)" />
+                    <FormControlLabel value="grande" control={<Radio />} label="Grande (acima de 15kg)" />
+                </RadioGroup>
                 <Typography variant="caption" display="block" sx={{ mb: 2 }}>
                     Essa estimativa nos ajuda a planejar a capacidade de coleta. A quantidade exata será medida no momento da coleta.
                 </Typography>
@@ -185,7 +192,6 @@ const NewCollection = () => {
             </Box>
         </Container>
     );
-}
+};
 
-
-export default NewCollection
+export default NewCollection;

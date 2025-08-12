@@ -433,12 +433,6 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3001, () => {
-    console.log("Servidor rodando na porta 3001");
+server.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
 });
-
-
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`API rodando na porta ${PORT}`));
