@@ -1,204 +1,215 @@
 import axios from "axios";
 
-export type DenunciaTipo = "Má Conduta" | "Outro";
+// ------------------- TIPOS -------------------
 
 export interface Usuario {
-    id: number;
-    nome: string;
-    email: string;
-    tipo: string;
+  id: number;
+  nome: string;
+  email: string;
+  tipo: string;
 }
 
 export interface Denuncia {
-    id: number;
-    data: string;
-    descricao: string;
-    status: string;
-    tipo?: DenunciaTipo;
-    anonima?: boolean;
+  id: number;
+  data: string;
+  descricao: string;
+  status: string;
+  tipo?: string;
+  anonima?: boolean;
 }
 
 export interface EnviarDenunciaRequest {
-    tipo: DenunciaTipo;
-    descricao: string;
-    anonima: boolean;
+  tipo: string;
+  descricao: string;
+  anonima: boolean;
 }
 
 export interface Endereco {
-    rua: string;
-    numero: string;
-    complemento?: string;
-    bairro: string;
-    cep: string;
-    cidade: string;
-    estado: string;
+  rua: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cep: string;
+  cidade: string;
+  estado: string;
+}
+
+export interface CollectionItem {
+  id: number;
+  tipo_material: string;
+  quantidade: number;
+  descricao: string;
+  collection_id: number;
 }
 
 export interface Coleta {
-    id: number;
-    coletador_id: number;
-    tipo_material: string;
-    quantidade: number;
-    status: string;
-    data: string;
-    descricao: string;
-    endereco: Endereco;
+  id: number;
+  coletador_id: number;
+  status: string;
+  data: string;
+  endereco: Endereco;
+  itens: CollectionItem[];
 }
 
 export interface ChatMsg {
-    id: number;
-    user_name: string;
-    text: string;
-    timestamp: string;
+  id: number;
+  user_name: string;
+  text: string;
+  timestamp: string;
 }
 
 export interface LoginRequest {
-    email: string;
-    senha: string;
+  email: string;
+  senha: string;
 }
 
 export interface SignupRequest {
-    nome: string;
-    email: string;
-    senha: string;
-    tipo: string;
+  nome: string;
+  email: string;
+  senha: string;
+  tipo: string;
 }
 
 export interface AuthResponse {
-    user: Usuario;
-    token: string;
+  user: Usuario;
+  token: string;
 }
 
 export interface EnvironmentalData {
-    materialReciclado: number;
-    reducaoCO2: number;
-    aguaEconomizada: number;
+  materialReciclado: number;
+  reducaoCO2: number;
+  aguaEconomizada: number;
 }
 
 export interface Stats {
-    totalUsuarios: number;
-    coletoresAtivos: number;
-    verificacoesPendentes: number;
+  totalUsuarios: number;
+  coletoresAtivos: number;
+  totalDenuncias: number;
 }
 
+// ------------------- CONFIGURAÇÃO AXIOS -------------------
+
 const api = axios.create({
-    baseURL: "http://localhost:3000/api",
+  baseURL: "http://localhost:3000/api",
 });
 
-api.interceptors.request.use(config => {
-    const token = localStorage.getItem("token");
-    if (token) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
-// --- AUTENTICAÇÃO ---
+// ------------------- AUTENTICAÇÃO -------------------
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
-    const res = await api.post("/auth/login", data);
-    return res.data;
+  const res = await api.post("/auth/login", data);
+  return res.data;
 }
 
 export async function signup(data: SignupRequest): Promise<AuthResponse> {
-    const res = await api.post("/auth/signup", data);
-    return res.data;
+  const res = await api.post("/auth/signup", data);
+  return res.data;
 }
 
-// --- DENÚNCIAS ---
+// ------------------- DENÚNCIAS -------------------
 
 export async function buscarDenuncias(): Promise<Denuncia[]> {
-    const res = await api.get("/denuncias");
-    return res.data;
+  const res = await api.get("/denuncias");
+  return res.data;
 }
 
-export async function enviarDenuncia(dados: EnviarDenunciaRequest): Promise<Denuncia> {
-    const res = await api.post("/denuncias", dados);
-    return res.data;
+export async function enviarDenuncia(
+  dados: EnviarDenunciaRequest,
+): Promise<Denuncia> {
+  const res = await api.post("/denuncias", dados);
+  return res.data;
 }
 
 export async function resolverDenuncia(id: number): Promise<Denuncia> {
-    const res = await api.patch(`/denuncias/${id}/resolver`);
-    return res.data;
+  const res = await api.patch(`/denuncias/${id}/resolver`);
+  return res.data;
 }
 
 export async function investigarDenuncia(id: number): Promise<Denuncia> {
-    const res = await api.patch(`/denuncias/${id}/investigar`);
-    return res.data;
+  const res = await api.patch(`/denuncias/${id}/investigar`);
+  return res.data;
 }
 
-// --- COLETAS ---
+// ------------------- COLETAS -------------------
 
 export async function criarColeta(coleta: {
-    tipo_material: string;
-    quantidade: number;
-    descricao?: string;
-    endereco?: Endereco;
+  itens: { tipo_material: string; quantidade: number; descricao?: string }[];
+  endereco?: Endereco;
 }): Promise<Coleta> {
-    const res = await api.post("/collections", coleta);
-    return res.data;
+  const res = await api.post("/collections", coleta);
+  return res.data;
 }
 
 export async function minhasColetasPendentes(): Promise<Coleta[]> {
-    const res = await api.get("/collections/my");
-    return res.data;
+  const res = await api.get("/collections/my");
+  return res.data;
 }
 
 export async function historicoColetas(): Promise<Coleta[]> {
-    const res = await api.get("/collections/history");
-    return res.data;
+  const res = await api.get("/collections/history");
+  return res.data;
 }
 
 export async function coletasAtribuidas(): Promise<Coleta[]> {
-    const res = await api.get("/collections/assigned");
-    return res.data;
+  const res = await api.get("/collections/assigned");
+  return res.data;
 }
 
 export async function coletasPendentes(): Promise<Coleta[]> {
-    const res = await api.get("/collections/pending");
-    return res.data;
+  const res = await api.get("/collections/pending");
+  return res.data;
 }
 
 export async function cancelarColeta(id: number): Promise<Coleta> {
-    const res = await api.patch(`/collections/${id}/cancel`);
-    return res.data;
+  const res = await api.patch(`/collections/${id}/cancel`);
+  return res.data;
 }
 
-export async function remarcarColeta(id: number, data: string): Promise<Coleta> {
-    const res = await api.patch(`/collections/${id}/reschedule`, { data });
-    return res.data;
+export async function remarcarColeta(
+  id: number,
+  data: string,
+): Promise<Coleta> {
+  const res = await api.patch(`/collections/${id}/reschedule`, { data });
+  return res.data;
 }
 
-// --- CHAT ---
+// ------------------- CHAT -------------------
 
 export async function buscarMensagensChat(): Promise<ChatMsg[]> {
-    const res = await api.get("/chat");
-    return res.data;
+  const res = await api.get("/chat");
+  return res.data;
 }
 
 export async function enviarMensagemChat(text: string): Promise<ChatMsg> {
-    const res = await api.post("/chat", { text });
-    return res.data;
+  const res = await api.post("/chat", { text });
+  return res.data;
 }
 
-// --- ESTATÍSTICAS ---
+// ------------------- ESTATÍSTICAS -------------------
 
 export async function buscarDadosAmbientais(): Promise<EnvironmentalData> {
-    const res = await api.get("/environmental-data");
-    return res.data;
+  const res = await api.get("/environmental-data");
+  return res.data;
 }
 
 export async function buscarStats(): Promise<Stats> {
-    const res = await api.get("/stats");
-    return res.data;
+  const res = await api.get("/stats");
+  return res.data;
 }
 
-// --- USUÁRIOS ---
+// ------------------- USUÁRIOS -------------------
 
 export async function listarUsuarios(): Promise<Usuario[]> {
-    const res = await api.get("/users");
-    return res.data;
+  const res = await api.get("/users");
+  return res.data;
 }
 
 export default api;

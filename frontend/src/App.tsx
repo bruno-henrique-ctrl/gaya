@@ -1,6 +1,11 @@
 import React from "react";
 import { createGlobalStyle } from "styled-components";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 
@@ -12,7 +17,7 @@ import Register from "./pages/auth/Register";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
-import EnvironmentalReports from './pages/admin/Ambiental.tsx'
+import EnvironmentalReports from "./pages/admin/Ambiental.tsx";
 
 import CollectorDashboard from "./pages/collector/CollectorDashboard";
 import CollectorHistory from "./pages/collector/CollectionHistory";
@@ -41,7 +46,7 @@ const PrivateRoute = ({
   }
 
   return <>{children}</>;
-}
+};
 
 const NotAuthorized = () => {
   return (
@@ -50,7 +55,7 @@ const NotAuthorized = () => {
       <p>Você não tem permissão para acessar esta página.</p>
     </div>
   );
-}
+};
 
 const HomeRedirect = () => {
   const { user } = useAuth();
@@ -65,7 +70,7 @@ const HomeRedirect = () => {
     default:
       return <Navigate to="/not-authorized" replace />;
   }
-}
+};
 
 const App = () => {
   return (
@@ -141,7 +146,7 @@ const App = () => {
           />
 
           <Route
-            path="/coletador/new"   // nova rota para criar coleta
+            path="/coletador/new" // nova rota para criar coleta
             element={
               <PrivateRoute roles={["coletador"]}>
                 <NewCollection />
@@ -150,7 +155,7 @@ const App = () => {
           />
 
           <Route
-            path="/coletador/novadenuncia"   // nova rota para criar coleta
+            path="/coletador/novadenuncia" // nova rota para criar coleta
             element={
               <PrivateRoute roles={["coletador"]}>
                 <NovaDenuncia />
@@ -187,9 +192,9 @@ const App = () => {
       </Router>
     </AuthProvider>
   );
-}
+};
 
-export default App
+export default App;
 
 const ResetCSS = createGlobalStyle`
   /* http://meyerweb.com/eric/tools/css/reset/ 

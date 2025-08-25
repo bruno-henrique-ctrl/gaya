@@ -5,88 +5,88 @@ import api from "../../api/api.ts"; // seu arquivo api.ts
 const socket: Socket = io("http://localhost:3000");
 
 interface ChatMessage {
-    id: number;
-    user: string;
-    text: string;
-    timestamp: string;
+  id: number;
+  user: string;
+  text: string;
+  timestamp: string;
 }
 
 const Chat = () => {
-    const [username, setUsername] = useState("Rafaela");
-    const [message, setMessage] = useState("");
-    const [chat, setChat] = useState<ChatMessage[]>([]);
+  const [username, setUsername] = useState("Rafaela");
+  const [message, setMessage] = useState("");
+  const [chat, setChat] = useState<ChatMessage[]>([]);
 
-    useEffect(() => {
-        api.get<ChatMessage[]>("/chat").then(res => {
-            setChat(res.data);
-        });
-    }, []);
+  useEffect(() => {
+    api.get<ChatMessage[]>("/chat").then((res) => {
+      setChat(res.data);
+    });
+  }, []);
 
-    useEffect(() => {
-        socket.on("chat_message", (msg: ChatMessage) => {
-            setChat((prev) => [...prev, msg]);
-        });
+  useEffect(() => {
+    socket.on("chat_message", (msg: ChatMessage) => {
+      setChat((prev) => [...prev, msg]);
+    });
 
-        return () => {
-            socket.off("chat_message");
-        };
-    }, []);
-
-    const sendMessage = async () => {
-        if (message.trim() === "") return;
-
-        // Salvar na API
-        const res = await api.post<ChatMessage>("/chat", {
-            user: username,
-            text: message,
-        });
-
-        const savedMsg = res.data;
-
-        // Emitir via socket
-        socket.emit("chat_message", savedMsg);
-
-        setMessage("");
+    return () => {
+      socket.off("chat_message");
     };
+  }, []);
 
-    return (
-        <div style={{ padding: 20 }}>
-            <h1>Chat em Tempo Real</h1>
+  const sendMessage = async () => {
+    if (message.trim() === "") return;
 
-            <div style={{ marginBottom: 10 }}>
-                <input
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Seu nome"
-                />
-            </div>
+    // Salvar na API
+    const res = await api.post<ChatMessage>("/chat", {
+      user: username,
+      text: message,
+    });
 
-            <div
-                style={{
-                    border: "1px solid #ccc",
-                    height: "200px",
-                    overflowY: "auto",
-                    marginBottom: 10,
-                }}
-            >
-                {chat.map((msg) => (
-                    <div key={msg.id}>
-                        <strong>{msg.user}:</strong> {msg.text}{" "}
-                        <small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
-                    </div>
-                ))}
-            </div>
+    const savedMsg = res.data;
 
-            <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="Digite sua mensagem..."
-            />
-            <button onClick={sendMessage}>Enviar</button>
-        </div>
-    );
-}
+    // Emitir via socket
+    socket.emit("chat_message", savedMsg);
+
+    setMessage("");
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Chat em Tempo Real</h1>
+
+      <div style={{ marginBottom: 10 }}>
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Seu nome"
+        />
+      </div>
+
+      <div
+        style={{
+          border: "1px solid #ccc",
+          height: "200px",
+          overflowY: "auto",
+          marginBottom: 10,
+        }}
+      >
+        {chat.map((msg) => (
+          <div key={msg.id}>
+            <strong>{msg.user}:</strong> {msg.text}{" "}
+            <small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
+          </div>
+        ))}
+      </div>
+
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        placeholder="Digite sua mensagem..."
+      />
+      <button onClick={sendMessage}>Enviar</button>
+    </div>
+  );
+};
 
 export default Chat;
