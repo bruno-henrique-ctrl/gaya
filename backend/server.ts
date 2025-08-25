@@ -1,10 +1,8 @@
 import { Pool } from "pg";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { messages, ChatMessage } from "./chat";
 import { Application, Request, Response, NextFunction } from "express";
 
-// Estendendo Request para adicionar user
 declare module "express-serve-static-core" {
     interface Request {
         user?: MyJwtPayload;
@@ -208,26 +206,61 @@ module.exports = (app: Application) => {
 
     // Criar coleta
     app.post("/api/collections", authMiddleware, async (req: Request, res: Response) => {
-        const { tipo_material, quantidade, descricao, endereco } = req.body;
+        const { itens, endereco } = req.body;
         const coletadorId = req.user?.id;
+
         if (!coletadorId) return res.status(401).json({ message: "Usuário não autorizado" });
+        if (!itens || !Array.isArray(itens) || itens.length === 0) {
+            return res.status(400).json({ message: "É necessário informar pelo menos um item" });
+        }
 
-        if (!tipo_material || !quantidade)
-            return res.status(400).json({ message: "Tipo e quantidade são obrigatórios" });
+        // Validação básica dos itens
+        for (const item of itens) {
+            if (!item.tipo_material || !item.quantidade) {
+                return res.status(400).json({ message: "Todos os itens devem ter tipo_material e quantidade" });
+            }
+            if (isNaN(Number(item.quantidade))) {
+                return res.status(400).json({ message: "Quantidade deve ser um número válido" });
+            }
+        }
 
+        const client = await pool.connect();
         try {
-            const result = await pool.query(
-                `INSERT INTO collections (coletador_id, tipo_material, quantidade, status, data, descricao, endereco)
-         VALUES ($1, $2, $3, 'pendente', NOW(), $4, $5) RETURNING *`,
-                [coletadorId, tipo_material, quantidade, descricao || "", endereco || ""]
+            await client.query("BEGIN");
+
+            // Criar a coleta
+            const enderecoJson = JSON.stringify(endereco || {});
+            const collectionResult = await client.query(
+                `INSERT INTO collections (coletador_id, endereco, status, data) 
+             VALUES ($1, $2, 'pendente', NOW()) RETURNING *`,
+                [coletadorId, enderecoJson]
             );
-            res.status(201).json(result.rows[0]);
-        } catch (err: unknown) {
-            if (err instanceof Error) console.error(err.message);
-            else console.error(err);
+
+            const collectionId = collectionResult.rows[0].id;
+
+            // Inserir os itens
+            const insertedItems: any[] = [];
+            for (const item of itens) {
+                const itemResult = await client.query(
+                    `INSERT INTO collection_items (collection_id, tipo_material, quantidade, descricao)
+                 VALUES ($1, $2, $3, $4) RETURNING *`,
+                    [collectionId, item.tipo_material, Number(item.quantidade), item.descricao || ""]
+                );
+                insertedItems.push(itemResult.rows[0]);
+            }
+
+            await client.query("COMMIT");
+
+            res.status(201).json({ collection: collectionResult.rows[0], itens: insertedItems });
+        } catch (err) {
+            await client.query("ROLLBACK");
+            console.error(err);
             res.status(500).json({ message: "Erro ao criar coleta" });
+        } finally {
+            client.release();
         }
     });
+
 
     // Coletas pendentes/agendadas do coletador logado
     app.get("/api/collections/my", authMiddleware, async (req: Request, res: Response) => {
@@ -236,13 +269,29 @@ module.exports = (app: Application) => {
 
         try {
             const result = await pool.query(
-                `SELECT * FROM collections WHERE coletador_id = $1 AND status IN ('pendente', 'agendada') ORDER BY data DESC`,
+                `SELECT 
+                c.*,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id', ci.id,
+                            'tipo_material', ci.tipo_material,
+                            'quantidade', ci.quantidade,
+                            'descricao', ci.descricao
+                        )
+                    ) FILTER (WHERE ci.id IS NOT NULL), '[]'
+                ) AS itens
+             FROM collections c
+             LEFT JOIN collection_items ci ON ci.collection_id = c.id
+             WHERE c.coletador_id = $1 AND c.status IN ('pendente', 'agendada')
+             GROUP BY c.id
+             ORDER BY c.data DESC`,
                 [coletadorId]
             );
+
             res.json(result.rows);
         } catch (err: unknown) {
-            if (err instanceof Error) console.error(err.message);
-            else console.error(err);
+            console.error(err);
             res.status(500).json({ message: "Erro ao buscar coletas" });
         }
     });
@@ -369,6 +418,32 @@ module.exports = (app: Application) => {
         }
     });
 
+    // Concluir coleta
+    app.patch("/api/collections/:id/complete", authMiddleware, async (req: Request, res: Response) => {
+        const id = Number(req.params.id);
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ message: "Usuário não autorizado" });
+
+        try {
+            const coleta = await pool.query("SELECT * FROM collections WHERE id = $1", [id]);
+            if (coleta.rows.length === 0) return res.status(404).json({ message: "Coleta não encontrada" });
+
+            if (req.user?.tipo !== "admin" && coleta.rows[0].coletador_id !== userId)
+                return res.status(403).json({ message: "Acesso negado" });
+
+            const result = await pool.query(
+                "UPDATE collections SET status = 'concluida' WHERE id = $1 RETURNING *",
+                [id]
+            );
+            res.json(result.rows[0]);
+        } catch (err: unknown) {
+            if (err instanceof Error) console.error(err.message);
+            else console.error(err);
+            res.status(500).json({ message: "Erro ao concluir coleta" });
+        }
+    });
+
+
     // ---------------- CHAT GLOBAL ----------------
 
     // Histórico do chat global
@@ -412,11 +487,19 @@ module.exports = (app: Application) => {
     });
 
     // ---------------- ESTATÍSTICAS ----------------
-
     app.get("/api/environmental-data", authMiddleware, async (_req: Request, res: Response) => {
         try {
-            const result = await pool.query("SELECT quantidade, status FROM collections WHERE status = 'concluida'");
-            const materialReciclado = result.rows.reduce((acc: number, c: any) => acc + Number(c.quantidade), 0);
+            const result = await pool.query(`
+            SELECT ci.quantidade
+            FROM collections c
+            JOIN collection_items ci ON ci.collection_id = c.id
+            WHERE c.status = 'concluida'
+        `);
+
+            const materialReciclado = result.rows.reduce(
+                (acc: number, c: any) => acc + Number(c.quantidade),
+                0
+            );
 
             const reducaoCO2 = materialReciclado * 0.3;
             const aguaEconomizada = materialReciclado * 1.5;
